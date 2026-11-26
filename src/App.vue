@@ -1,11 +1,27 @@
 <script setup lang="ts">
-import {computed, ref} from 'vue'
+import {computed, onMounted, onUnmounted, ref, watchEffect} from 'vue'
 import {provideDesktopState} from './desktopState'
 import JdkView from './views/JdkView.vue'
 import LogsView from './views/LogsView.vue'
 import OverviewView from './views/OverviewView.vue'
 import SettingsView from './views/SettingsView.vue'
 import brand from './brand.png'
+
+const systemAppearance = window.matchMedia('(prefers-color-scheme: dark)')
+const systemDark = ref(systemAppearance.matches)
+
+// 系统外观变化时即时更新跟随系统模式。
+function updateSystemAppearance(event: MediaQueryListEvent) {
+  systemDark.value = event.matches
+}
+
+onMounted(() => systemAppearance.addEventListener('change', updateSystemAppearance))
+onUnmounted(() => systemAppearance.removeEventListener('change', updateSystemAppearance))
+
+// 自定义样式与 Vuetify 使用同一外观，根节点变量也能覆盖弹窗。
+watchEffect(() => {
+  document.documentElement.dataset.appearance = systemDark.value ? 'dark' : 'light'
+})
 
 const sections = [
   {id: 'overview', title: '概览', icon: 'mdi-view-dashboard-outline'},
@@ -24,7 +40,7 @@ const progress = computed(() => status.value?.total ? (status.value.received / s
 </script>
 
 <template>
-  <v-app>
+  <v-app :theme="systemDark ? 'desktopDark' : 'desktop'">
     <div class="desktop">
       <aside class="sidebar">
         <div class="brand">

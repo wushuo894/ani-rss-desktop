@@ -368,7 +368,7 @@ onDeactivated(() => {
   margin-bottom: 16px;
   padding: 9px 10px 9px 13px;
   border-radius: 9px;
-  background: #f8efe6;
+  background: var(--settings-highlight);
 }
 
 .preference-row {

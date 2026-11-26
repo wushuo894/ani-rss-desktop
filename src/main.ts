@@ -15,6 +15,19 @@ const vuetify = createVuetify({
     theme: {
         defaultTheme: 'desktop',
         themes: {
+            desktopDark: {
+                dark: true,
+                colors: {
+                    background: '#191411',
+                    surface: '#251e19',
+                    primary: '#ffae91',
+                    'on-primary': '#35180e',
+                    secondary: '#d0b9ad',
+                    success: '#85d1ac',
+                    error: '#ffa0ae',
+                    warning: '#f0c47c',
+                },
+            },
             desktop: {
                 dark: false,
                 colors: {

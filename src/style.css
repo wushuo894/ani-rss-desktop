@@ -5,7 +5,35 @@
     --paper: #fffdf9;
     --cream: #faf7f2;
     --accent: #a03e25;
+    --sidebar: #fffaf3;
+    --nav-hover: #f7ebdf;
+    --nav-selected: #fae8d8;
+    --running: #246048;
+    --panel-border: #ebcdb5;
+    --panel-start: #fff8ed;
+    --panel-end: #fbe2cb;
+    --settings-highlight: #f8efe6;
+    color-scheme: light;
     font-family: Inter, "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", system-ui, sans-serif;
+}
+
+/* 深色外观同时调整页面表面、导航和状态文字。 */
+:root[data-appearance="dark"] {
+    --ink: #f6e8df;
+    --muted: #d0b9ad;
+    --line: #504039;
+    --paper: #251e19;
+    --cream: #191411;
+    --accent: #ffae91;
+    --sidebar: #211a16;
+    --nav-hover: #382a23;
+    --nav-selected: #4b2e23;
+    --running: #85d1ac;
+    --panel-border: #624333;
+    --panel-start: #2b201a;
+    --panel-end: #482b20;
+    --settings-highlight: #362820;
+    color-scheme: dark;
 }
 
 .v-application {
@@ -28,7 +56,7 @@
     height: 100vh;
     padding: 27px 13px 19px;
     border-right: 1px solid var(--line);
-    background: #fffaf3;
+    background: var(--sidebar);
 }
 
 .brand {
@@ -75,12 +103,12 @@
 
 .sidebar nav .v-btn:hover {
     color: var(--ink);
-    background: #f7ebdf;
+    background: var(--nav-hover);
 }
 
 .sidebar nav .selected {
     color: var(--accent);
-    background: #fae8d8;
+    background: var(--nav-selected);
     font-weight: 680;
 }
 
@@ -111,7 +139,7 @@
 }
 
 .app-status.running {
-    color: #246048;
+    color: var(--running);
 }
 
 .status-dot {
@@ -180,8 +208,8 @@ h2 {
     isolation: isolate;
     overflow: hidden;
     padding: 23px;
-    border-color: #ebcdb5;
-    background: linear-gradient(112deg, #fff8ed 28%, #fbe2cb);
+    border-color: var(--panel-border);
+    background: linear-gradient(112deg, var(--panel-start) 28%, var(--panel-end));
 }
 
 .service-panel::before {
