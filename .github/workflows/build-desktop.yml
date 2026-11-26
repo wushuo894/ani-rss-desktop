@@ -1,0 +1,43 @@
+name: Build desktop
+
+on:
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+          cache-dependency-path: go.sum
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 12.23.0
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '26'
+          cache: pnpm
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+      - name: Build desktop packages
+        run: |
+          go tool mygo build -platform linux/amd64,windows/amd64,darwin/arm64
+
+          version=$(jq -er '.version' mygo.json)
+          echo "version=v$version" >> $GITHUB_ENV
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v3
+        with:
+          name: ${{ env.version }}
+          body_path: UPDATE.md
+          tag_name: ${{ env.version }}
+          append_body: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          files: |
+            ./build/**/*.deb
+            ./build/**/*.rpm
+            ./build/**/*.exe
+            ./build/**/*.dmg

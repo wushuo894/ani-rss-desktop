@@ -1,0 +1,12 @@
+{
+  "name": "ani-rss-desktop",
+  "identifier": "io.github.wushuo894.ani-rss-desktop",
+  "version": "0.2.0",
+  "icon": "resources/icon.png",
+  "devUrl": "http://127.0.0.1:5173",
+  "devCommand": "pnpm --config.verify-deps-before-run=false run dev:web",
+  "buildCommand": "pnpm --config.verify-deps-before-run=false run build:web",
+  "frontendDist": "dist",
+  "bindings": "src/mygo.ts",
+  "out": "build"
+}

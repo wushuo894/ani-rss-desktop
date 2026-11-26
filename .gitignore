@@ -1,0 +1,4 @@
+.mygo/
+node_modules/
+build/
+dist/
