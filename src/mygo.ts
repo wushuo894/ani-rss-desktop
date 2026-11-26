@@ -77,8 +77,8 @@ export interface UpdateInfo {
 export const Desktop = {
   /** AddJDK 将现有安装登记到列表。路径可指向 JDK 根目录、macOS 包或 java。 */
   addJDK: bind<[string], void>("Desktop.AddJDK", (path: string) => [path]),
-  /** ChangePassword 直接更新 config.v2.json。运行中的实例先停止，避免覆盖文件。 */
-  changePassword: bind<[string], void>("Desktop.ChangePassword", (next: string) => [next]),
+  /** ChangePassword 更新用户名和密码。运行中的实例先停止，避免覆盖配置。 */
+  changePassword: bind<[string, string], void>("Desktop.ChangePassword", (username: string, next: string) => [username, next]),
   /** CheckUpdate 返回当前版本与 GitHub 最新正式版本。 */
   checkUpdate: bind<[], UpdateInfo>("Desktop.CheckUpdate", () => []),
   /** CopyText 通过系统剪贴板复制日志或接入地址。 */
@@ -97,6 +97,8 @@ export const Desktop = {
   getJDKs: bind<[], JDK[]>("Desktop.GetJDKs", () => []),
   /** GetLaunchCommand 预览当前进程或下次启动会用到的命令。 */
   getLaunchCommand: bind<[boolean], string>("Desktop.GetLaunchCommand", (current: boolean) => [current]),
+  /** GetLoginUsername 读取当前服务所用配置中的用户名。 */
+  getLoginUsername: bind<[], string>("Desktop.GetLoginUsername", () => []),
   /** GetLogs 返回有界的最近输出。重新打开应用后可以查看 ani-rss 持久化日志。 */
   getLogs: bind<[], string>("Desktop.GetLogs", () => []),
   /** GetOverview 从当前实例的数据目录读取 API Key，分别获取订阅和下载状态。 */

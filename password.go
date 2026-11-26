@@ -12,8 +12,42 @@ import (
 	"strings"
 )
 
-// ChangePassword 直接更新 config.v2.json。运行中的实例先停止，避免覆盖文件。
-func (d *Desktop) ChangePassword(next string) error {
+// GetLoginUsername 读取当前服务所用配置中的用户名。
+func (d *Desktop) GetLoginUsername() (string, error) {
+	d.mu.Lock()
+	dir := d.data.Settings.DataDir
+	if d.proc != nil {
+		dir = d.proc.settings.DataDir
+	}
+	d.mu.Unlock()
+
+	raw, err := os.ReadFile(filepath.Join(dir, "config.v2.json"))
+	if errors.Is(err, os.ErrNotExist) {
+		return "", errors.New("尚未生成 config.v2.json，请先启动 ani-rss 完成初始化")
+	}
+	if err != nil {
+		return "", err
+	}
+	var config struct {
+		Login *struct {
+			Username string `json:"username"`
+		} `json:"login"`
+	}
+	if err := json.Unmarshal(raw, &config); err != nil {
+		return "", fmt.Errorf("读取 config.v2.json 失败：%w", err)
+	}
+	if config.Login == nil {
+		return "", errors.New("config.v2.json 缺少有效的 login 配置")
+	}
+	return config.Login.Username, nil
+}
+
+// ChangePassword 更新用户名和密码。运行中的实例先停止，避免覆盖配置。
+func (d *Desktop) ChangePassword(username, next string) error {
+	username = strings.TrimSpace(username)
+	if username == "" {
+		return errors.New("请输入用户名")
+	}
 	if strings.TrimSpace(next) == "" {
 		return errors.New("请输入新密码")
 	}
@@ -37,11 +71,11 @@ func (d *Desktop) ChangePassword(next string) error {
 				return err
 			}
 		}
-		err = replacePassword(path, next)
+		err = replacePassword(path, username, next)
 		if run != nil {
 			if restartErr := d.startWith(run.settings, run.jdk); restartErr != nil {
 				if err == nil {
-					return fmt.Errorf("密码已写入，服务重新启动失败：%w", restartErr)
+					return fmt.Errorf("用户名和密码已写入，服务重新启动失败：%w", restartErr)
 				}
 				return errors.Join(err, restartErr)
 			}
@@ -51,7 +85,7 @@ func (d *Desktop) ChangePassword(next string) error {
 }
 
 // replacePassword 保留其他 JSON 字段，并刷新 tokenId 以使旧会话失效。
-func replacePassword(path, password string) error {
+func replacePassword(path, username, password string) error {
 	raw, err := os.ReadFile(path)
 	if err != nil {
 		return err
@@ -64,6 +98,7 @@ func replacePassword(path, password string) error {
 	if err := json.Unmarshal(config["login"], &login); err != nil || login == nil {
 		return errors.New("config.v2.json 缺少有效的 login 配置")
 	}
+	login["username"], _ = json.Marshal(username)
 	login["password"], _ = json.Marshal(passwordMD5(password))
 	login["isDefault"] = json.RawMessage("false")
 	config["login"], err = json.Marshal(login)

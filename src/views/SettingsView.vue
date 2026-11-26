@@ -11,7 +11,7 @@ const extraArgs = ref('')
 const autoStart = ref(false)
 const dialog = ref<'password' | 'command' | null>(null)
 const newPassword = ref('')
-const confirmation = ref('')
+const username = ref('')
 const command = ref('')
 const commandError = ref('')
 const currentCommand = ref(false)
@@ -98,24 +98,26 @@ function setAutoStart(enabled: boolean | null) {
   })
 }
 
-// 重设密码前清空表单中的敏感值。
+// 打开弹窗前读取当前用户名，并清空密码输入。
 function openPassword() {
-  newPassword.value = ''
-  confirmation.value = ''
-  dialog.value = 'password'
+  return act(async () => {
+    username.value = await Desktop.getLoginUsername()
+    newPassword.value = ''
+    dialog.value = 'password'
+  })
 }
 
-// 通过 Go 写入服务配置文件，密码不会保存在桌面设置中。
+// 通过 Go 将用户名和新密码写入服务配置文件。
 function submitPassword() {
-  if (!newPassword.value.trim() || newPassword.value !== confirmation.value) {
-    notify('请确认两次输入的密码一致')
+  if (!username.value.trim() || !newPassword.value.trim()) {
+    notify('请输入用户名和新密码')
     return
   }
   return act(async () => {
-    await Desktop.changePassword(newPassword.value)
+    await Desktop.changePassword(username.value, newPassword.value)
     dialog.value = null
-    newPassword.value = confirmation.value = ''
-  }, '密码已修改')
+    newPassword.value = ''
+  }, '登录信息已更新')
 }
 
 // 每次进入页面刷新外部状态，同时保留尚未保存的启动参数。
@@ -135,7 +137,8 @@ async function refreshSettingsPage() {
 onActivated(refreshSettingsPage)
 onDeactivated(() => {
   dialog.value = null
-  newPassword.value = confirmation.value = ''
+  // 离开设置页时清空尚未提交的密码。
+  newPassword.value = ''
 })
 </script>
 
@@ -268,20 +271,20 @@ onDeactivated(() => {
   <v-dialog :model-value="dialog !== null" :persistent="busy" :max-width="dialog === 'command' ? 720 : 520"
             @update:model-value="value => { if (!value) dialog = null }">
     <v-card v-if="dialog === 'password'" class="dialog-card">
-      <v-card-title>修改 Web UI 密码</v-card-title>
+      <v-card-title>修改 Web UI 登录信息</v-card-title>
       <v-form @submit.prevent="submitPassword">
         <v-card-text>
-          <v-text-field v-model="newPassword" label="新密码" autocomplete="new-password" type="password"
+          <v-text-field v-model="username" label="用户名" autocomplete="username"
                         variant="outlined" density="compact"/>
-          <v-text-field v-model="confirmation" label="确认新密码" autocomplete="new-password" type="password"
-                        variant="outlined" density="compact" hide-details/>
+          <v-text-field v-model="newPassword" label="新密码" autocomplete="new-password"
+                        type="text" variant="outlined" density="compact" hide-details/>
           <p class="form-note">写入服务数据目录中的 config.v2.json。{{ active ? '保存时将重启当前服务。' : '' }}</p>
         </v-card-text>
         <v-card-actions>
           <v-spacer/>
           <v-btn :disabled="busy" @click="dialog = null">取消</v-btn>
           <v-btn type="submit" color="primary" variant="flat" :loading="busy"
-                 :disabled="!newPassword.trim() || !confirmation">确定
+                 :disabled="!username.trim() || !newPassword.trim()">确定
           </v-btn>
         </v-card-actions>
       </v-form>
