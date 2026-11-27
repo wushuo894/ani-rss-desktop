@@ -17,9 +17,6 @@ import (
 //go:embed resources/tray.png
 var trayIcon []byte
 
-//go:embed resources/tray-template.png
-var trayTemplate []byte
-
 // main 绑定前端服务，并接入单实例、窗口、托盘和登录自启。
 func main() {
 	if os.Getenv("MYGO_GENERATE") != "" {
@@ -125,9 +122,6 @@ func installTray(d *Desktop, window *mygo.Window) (*mygo.Tray, error) {
 	// macOS 状态栏使用单色模板，随系统的浅色或深色外观着色。
 	icon := trayIcon
 	useTemplate := runtime.GOOS == "darwin"
-	if useTemplate {
-		icon = trayTemplate
-	}
 	return mygo.NewTray(mygo.TrayOptions{ID: "main", Icon: icon, IconIsTemplate: useTemplate, ToolTip: "ani-rss Desktop", Menu: menu})
 }
 
