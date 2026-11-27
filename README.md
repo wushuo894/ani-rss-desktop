@@ -6,6 +6,20 @@
 首次使用时，可选用自动发现的 Java 25，也可以在「JDK 管理」里手动添加或下载 Eclipse Temurin 25，然后在「概览」启动服务。桌面端会下载项目的正式发行
 JAR，并校验文件大小和 SHA-256。
 
+## 使用 Homebrew 安装
+
+适用于搭载 Apple Silicon 的 Mac，要求 macOS 12 或更高版本。安装命令如下。
+
+```sh
+brew install --cask wushuo894/tap/ani-rss-desktop
+```
+
+通过 Homebrew 升级时运行以下命令。
+
+```sh
+brew upgrade --cask wushuo894/tap/ani-rss-desktop
+```
+
 ## 开发与打包
 
 需要 Go 1.27.3、Node.js 22.13 或更新版本和 pnpm。在 `ani-rss-desktop/` 中运行以下命令。
