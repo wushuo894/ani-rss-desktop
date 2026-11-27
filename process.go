@@ -119,10 +119,7 @@ func (d *Desktop) stop() error {
 
 // shutdown 先取消网络下载，再等待管理操作释放进程。
 func (d *Desktop) shutdown() {
-	d.cancel()
-	d.op.Lock()
-	defer d.op.Unlock()
-	_ = d.stop()
+	d.shutdownForUpdate(false)
 }
 
 // supervise 按退出码决定重启，并避免启动阶段异常形成无限重启。

@@ -79,6 +79,8 @@ export const Desktop = {
   addJDK: bind<[string], void>("Desktop.AddJDK", (path: string) => [path]),
   /** ChangePassword 更新用户名和密码。运行中的实例先停止，避免覆盖配置。 */
   changePassword: bind<[string, string], void>("Desktop.ChangePassword", (username: string, next: string) => [username, next]),
+  /** CheckDesktopUpdate 打开桌面端更新窗口，检查、安装和重启由 MyGo 负责。 */
+  checkDesktopUpdate: bind<[], void>("Desktop.CheckDesktopUpdate", () => []),
   /** CheckUpdate 返回当前版本与 GitHub 最新正式版本。 */
   checkUpdate: bind<[], UpdateInfo>("Desktop.CheckUpdate", () => []),
   /** CopyText 通过系统剪贴板复制日志或接入地址。 */

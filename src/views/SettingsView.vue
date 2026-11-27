@@ -253,6 +253,14 @@ onDeactivated(() => {
             <span class="setting-title">Web UI 密码</span>
             <v-btn variant="tonal" size="small" :disabled="working" @click="openPassword">重设密码</v-btn>
           </div>
+          <div class="preference-row">
+            <div>
+              <div class="setting-title">桌面端更新</div>
+              <p class="setting-detail">更新 ani-rss Desktop 应用</p>
+            </div>
+            <v-btn variant="tonal" size="small" :disabled="working"
+                   @click="act(Desktop.checkDesktopUpdate)">检查更新</v-btn>
+          </div>
         </section>
       </div>
 

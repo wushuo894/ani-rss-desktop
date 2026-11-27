@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/plugins/updater"
 )
 
 //go:embed resources/tray.png
@@ -43,22 +44,18 @@ func main() {
 		return
 	}
 	mygo.Bind(desktop)
+	// 桌面端更新使用独立发行源和框架弹窗，与 ANI-RSS JAR 更新分别处理。
+	mygo.Use(updater.New(updater.Options{Language: "zh-Hans"}))
+	var updateInstalled atomic.Bool
+	updater.OnInstalled(func() { updateInstalled.Store(true) })
 
 	var window *mygo.Window
-	var closing, quitReady atomic.Bool
-	// 清理过程可能等待 Java 退出，放到后台，确保窗口还能处理系统消息。
-	mygo.App.OnBeforeQuit(func(event *mygo.QuitEvent) {
-		if quitReady.Load() {
-			return
-		}
-		event.PreventDefault()
-		if closing.CompareAndSwap(false, true) {
-			go func() {
-				desktop.shutdown()
-				quitReady.Store(true)
-				mygo.App.Quit()
-			}()
-		}
+	var closing atomic.Bool
+	mygo.App.OnBeforeQuit(func(_ *mygo.QuitEvent) { closing.Store(true) })
+	mygo.App.OnQuitCanceled(func() { closing.Store(false) })
+	// OnQuit 在框架启动新版之前执行；不取消退出，避免丢失 Relaunch 请求。
+	mygo.App.OnQuit(func() {
+		desktop.shutdownForUpdate(updateInstalled.Load())
 	})
 	mygo.App.OnSecondInstance(func(_ []string, _ string) { showWindow(window) })
 	mygo.App.OnActivate(func(visible bool) {
@@ -84,14 +81,16 @@ func main() {
 		} else if atLogin {
 			showWindow(window)
 		}
-		if atLogin {
-			go func() {
-				if err := desktop.Start(); err != nil {
-					showWindow(window)
-					showError("ani-rss 启动失败", err)
-				}
-			}()
-		}
+		go func() {
+			resumed, err := desktop.resumeAfterUpdate()
+			if !resumed && err == nil && atLogin {
+				err = desktop.Start()
+			}
+			if err != nil {
+				showWindow(window)
+				showError("ani-rss 启动失败", err)
+			}
+		}()
 	})
 	err = mygo.App.Run()
 	desktop.shutdown()
@@ -120,6 +119,7 @@ func installTray(d *Desktop, window *mygo.Window) (*mygo.Tray, error) {
 		action("重启 ani-rss", d.Restart),
 		action("停止 ani-rss", d.Stop),
 		mygo.Separator(),
+		action("检查桌面端更新", func() error { d.CheckDesktopUpdate(); return nil }),
 		{Label: "退出桌面端", Role: mygo.RoleQuit},
 	})
 	// macOS 状态栏使用单色模板，随系统的浅色或深色外观着色。

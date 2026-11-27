@@ -26,3 +26,18 @@ go tool mygo build -platform linux/amd64,windows/amd64 -skip-installer
 - Windows 需要 WebView2。Linux 需要 GTK 3 和 WebKitGTK 4.1，托盘还需要 AppIndicator
   支持。 [MyGo 系统依赖](https://mygo.run/docs/getting-started) · [托盘依赖](https://mygo.run/docs/menus)
 - 带有 DesktopUpdate 的 ani-rss 发行版支持从 Web UI 发起更新，也支持服务定时自更新。Java 退出后，桌面端替换 JAR 并拉起服务。
+
+## 桌面端自更新
+
+在「启动设置 → 桌面与账户 → 桌面端更新」或托盘菜单中点击「检查桌面端更新」。桌面端使用 MyGo 的中文更新窗口，
+启动 10 秒后自动检查，此后每天检查一次；窗口支持查看发行说明、跳过版本和自动下载安装。
+安装后可以立即重启，也可以下次启动时使用新版。更新退出前正在运行的 ANI-RSS 服务会在下次启动桌面端时恢复，
+并沿用退出前实际生效的 JDK 和启动参数。概览中的「检查更新」仍用于更新 ANI-RSS JAR。
+
+发布前在桌面端仓库 `wushuo894/ani-rss-desktop` 的 Actions Secrets 中设置 `MYGO_UPDATER_PRIVATE_KEY`，
+值为与 `mygo.json` 中公钥对应的私钥文件完整内容。私钥只需配置一次，不要提交到 Git。
+修改 `mygo.json` 中的版本与 `UPDATE.md` 发行说明后，运行 **Build desktop** 工作流，
+工作流会生成签名更新包、增量包及各平台清单，上传完成后发布 `v版本号`。
+本地构建也需要通过同名环境变量提供私钥才能生成签名更新文件。
+
+开发版不支持自更新。Linux 用户需要使用 `install.sh` 或解压后的可写目录版本；deb/rpm 由包管理器更新，AppImage 不支持此更新方式。
