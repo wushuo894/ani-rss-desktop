@@ -9,6 +9,22 @@ Linux 和 Windows 主窗口使用系统原生标题栏、按钮、边框、圆�
 首次使用时，可选用自动发现的 Java 25，也可以在「JDK 管理」里手动添加或下载 Eclipse Temurin 25，然后在「概览」启动服务。桌面端会下载项目的正式发行
 JAR，并校验文件大小和 SHA-256。
 
+## 使用脚本安装
+
+在 GitHub 发行页的 **Assets** 中确认有对应平台的安装脚本。脚本会下载并安装最新发行版。 [桌面端发行页](https://github.com/wushuo894/ani-rss-desktop/releases/latest)
+
+**Linux x86_64** 使用普通用户打开终端，运行以下命令。安装完成后可从应用菜单打开 ani-rss-desktop。
+
+```sh
+curl -fsSL https://github.com/wushuo894/ani-rss-desktop/releases/latest/download/install.sh | sh
+```
+
+**Windows x64** 打开 PowerShell，运行以下命令。脚本会校验安装程序的 SHA-256，安装完成后自动打开应用。应用需要 WebView2 Runtime。
+
+```powershell
+irm https://github.com/wushuo894/ani-rss-desktop/releases/latest/download/install.ps1 | iex
+```
+
 ## 使用 Homebrew 安装
 
 适用于搭载 Apple Silicon 的 Mac，要求 macOS 12 或更高版本。安装命令如下。
@@ -64,4 +80,4 @@ go tool mygo build -platform linux/amd64,windows/amd64,darwin/arm64 -skip-instal
 工作流会生成签名更新包、增量包及各平台清单，上传完成后发布 `v版本号`。
 本地构建也需要通过同名环境变量提供私钥才能生成签名更新文件。
 
-开发版不支持自更新。Linux 用户需要使用 `install.sh` 或解压后的可写目录版本；deb/rpm 由包管理器更新，AppImage 不支持此更新方式。
+开发版不支持自更新。Linux 上，通过 `install.sh` 安装或解压到可写目录的版本支持应用内更新。`.deb` 和 `.rpm` 版本通过包管理器升级。AppImage 不支持应用内更新。

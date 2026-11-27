@@ -9,6 +9,7 @@ const logs = ref('')
 const logPanel = ref<HTMLElement>()
 let timer: ReturnType<typeof setInterval> | undefined
 let loading = false
+let scrollOnEntry = false
 
 const filteredLogs = computed(() => {
   const query = (logQuery.value ?? '').trim().toLowerCase()
@@ -21,11 +22,14 @@ async function refreshLogs() {
   loading = true
   try {
     logs.value = await Desktop.getLogs()
-    // 等待日志渲染完成，再滚动到最后一行。
-    await nextTick()
-    const panel = logPanel.value
-    if (timer !== undefined && panel) {
-      panel.scrollTop = panel.scrollHeight
+    if (scrollOnEntry) {
+      // 切入页面后的首次刷新完成并渲染后，滚动到最后一行。
+      await nextTick()
+      const panel = logPanel.value
+      if (scrollOnEntry && panel) {
+        scrollOnEntry = false
+        panel.scrollTop = panel.scrollHeight
+      }
     }
   } catch (error) {
     if (timer !== undefined) {
@@ -40,10 +44,12 @@ async function refreshLogs() {
 
 // 打开日志页时立即刷新，离开时停止轮询。
 onActivated(() => {
+  scrollOnEntry = true
   timer = setInterval(refreshLogs, 800)
   void refreshLogs()
 })
 onDeactivated(() => {
+  scrollOnEntry = false
   clearInterval(timer)
   timer = undefined
 })

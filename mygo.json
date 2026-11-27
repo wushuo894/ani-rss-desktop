@@ -1,7 +1,7 @@
 {
   "name": "ani-rss-desktop",
   "identifier": "io.github.wushuo894.ani-rss-desktop",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "icon": "resources/icon.png",
   "devUrl": "http://127.0.0.1:5173",
   "devCommand": "pnpm --config.verify-deps-before-run=false run dev:web",
@@ -11,6 +11,7 @@
   "out": "build",
   "updates": {
     "publicKey": "8zoTsfKo37YDTK3GR0wu3GKfnMw6aoPYfuOArfbEVxQ=",
-    "github": "wushuo894/ani-rss-desktop"
+    "github": "wushuo894/ani-rss-desktop",
+    "deltas": 0
   }
 }

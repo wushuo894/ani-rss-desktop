@@ -3,6 +3,13 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "go tool mygo dev",
+    "build": "go tool mygo build",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "desktop:dev": "go tool mygo dev",
+    "desktop:build": "go tool mygo build",
+    "desktop:package": "go tool mygo build -platform linux/amd64,windows/amd64,darwin/arm64",
     "dev:web": "vite",
     "build:web": "vue-tsc --noEmit && vite build"
   },
@@ -15,7 +22,7 @@
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.11",
     "typescript": "~6.0.3",
-    "vite": "^8.3.8",
+    "vite": "^8.4.0",
     "vue-tsc": "^3.3.14"
   }
 }
