@@ -10,6 +10,7 @@ import (
 	"sync/atomic"
 
 	"github.com/egoist/mygo"
+	_ "github.com/egoist/mygo/locales/zh-Hans"
 	"github.com/egoist/mygo/plugins/updater"
 )
 
@@ -28,6 +29,8 @@ func main() {
 	if !mygo.App.RequestSingleInstanceLock() {
 		return
 	}
+	// 让 MyGo 的内置文案与桌面端界面统一使用简体中文。
+	mygo.App.SetLanguages("zh-Hans")
 	desktop, err := newDesktop()
 	if err != nil {
 		mygo.App.WhenReady(func() {
