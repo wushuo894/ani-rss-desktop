@@ -8,7 +8,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"sync/atomic"
-	"time"
 
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/plugins/updater"
@@ -47,6 +46,7 @@ func main() {
 	updater.OnInstalled(func() { updateInstalled.Store(true) })
 
 	var window *mygo.Window
+	var tray *trayPanel
 	var closing atomic.Bool
 	mygo.App.OnBeforeQuit(func(_ *mygo.QuitEvent) { closing.Store(true) })
 	mygo.App.OnQuitCanceled(func() { closing.Store(false) })
@@ -56,17 +56,28 @@ func main() {
 	})
 	mygo.App.OnSecondInstance(func(_ []string, _ string) { showWindow(window) })
 	mygo.App.OnActivate(func(visible bool) {
-		if !visible && window != nil && !closing.Load() {
+		if !visible && window != nil && !closing.Load() && (tray == nil || tray.panel == nil) {
 			showWindow(window)
 		}
 	})
 	mygo.App.WhenReady(func() {
 		atLogin := mygo.App.WasOpenedAtLogin()
-		window = mygo.NewWindow(mygo.WindowOptions{
-			Title: "ani-rss Desktop", URL: "/", Width: 1080, Height: 760,
-			MinWidth: 680, MinHeight: 520, Hidden: atLogin, BackgroundColor: "#faf7f2",
-		})
-		tray, err := installTray(desktop, window)
+		// 默认使用系统完整窗口装饰，只有 macOS 启用沉浸式标题栏。
+		opts := mygo.WindowOptions{
+			Title: "ani-rss-desktop", URL: "/", Width: 1080, Height: 760,
+			MinWidth: 680, MinHeight: 520, Hidden: atLogin,
+			BackgroundColor: "light-dark(#faf7f2, #191411)",
+		}
+		if runtime.GOOS == "darwin" {
+			// macOS 页面延伸到标题栏下方，并保留系统原生窗口按钮。
+			opts.TitleBarStyle = mygo.TitleBarHidden
+			opts.TitleBarHeight = 44
+		}
+		window = mygo.NewWindow(opts)
+		desktop.mu.Lock()
+		desktop.mainWindow = window
+		desktop.mu.Unlock()
+		tray, err = installTray(desktop)
 		if err == nil {
 			window.OnClose(func(event *mygo.CloseEvent) {
 				if !closing.Load() {
@@ -74,7 +85,7 @@ func main() {
 					window.Hide()
 				}
 			})
-			go watchTray(desktop, tray)
+			go watchTray(desktop, tray.tray)
 		} else if atLogin {
 			showWindow(window)
 		}
@@ -93,55 +104,6 @@ func main() {
 	desktop.shutdown()
 	if err != nil {
 		log.Fatal(err)
-	}
-}
-
-// installTray 给托盘接入与主窗口一致的服务操作。
-func installTray(d *Desktop, window *mygo.Window) (*mygo.Tray, error) {
-	action := func(label string, handler func() error) *mygo.MenuItem {
-		return &mygo.MenuItem{Label: label, Click: func(_ *mygo.MenuItem, _ *mygo.Window) {
-			go func() {
-				if err := handler(); err != nil {
-					showWindow(window)
-					showError(label, err)
-				}
-			}()
-		}}
-	}
-	menu := mygo.NewMenu([]*mygo.MenuItem{
-		action("显示主窗口", func() error { showWindow(window); return nil }),
-		action("打开 Web UI", func() error { return d.OpenWeb("ui") }),
-		mygo.Separator(),
-		action("启动 ani-rss", d.Start),
-		action("重启 ani-rss", d.Restart),
-		action("停止 ani-rss", d.Stop),
-		mygo.Separator(),
-		action("检查桌面端更新", func() error { d.CheckDesktopUpdate(); return nil }),
-		{Label: "退出桌面端", Role: mygo.RoleQuit},
-	})
-	// macOS 状态栏使用单色模板，随系统的浅色或深色外观着色。
-	icon := trayIcon
-	useTemplate := runtime.GOOS == "darwin"
-	return mygo.NewTray(mygo.TrayOptions{ID: "main", Icon: icon, IconIsTemplate: useTemplate, ToolTip: "ani-rss Desktop", Menu: menu})
-}
-
-// watchTray 在服务状态变化时更新托盘提示。
-func watchTray(d *Desktop, tray *mygo.Tray) {
-	ticker := time.NewTicker(time.Second)
-	defer ticker.Stop()
-	labels := map[string]string{"running": "运行中", "starting": "启动中", "stopping": "停止中", "stopped": "已停止", "failed": "启动失败"}
-	var previous string
-	for {
-		select {
-		case <-d.ctx.Done():
-			return
-		case <-ticker.C:
-			status := d.GetStatus().State
-			if status != previous {
-				tray.SetToolTip("ani-rss · " + labels[status])
-				previous = status
-			}
-		}
 	}
 }
 

@@ -256,7 +256,7 @@ onDeactivated(() => {
           <div class="preference-row">
             <div>
               <div class="setting-title">桌面端更新</div>
-              <p class="setting-detail">更新 ani-rss Desktop 应用</p>
+              <p class="setting-detail">更新 ani-rss-desktop 应用</p>
             </div>
             <v-btn variant="tonal" size="small" :disabled="working"
                    @click="act(Desktop.checkDesktopUpdate)">检查更新</v-btn>

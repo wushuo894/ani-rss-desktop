@@ -1,10 +1,20 @@
-# ani-rss Desktop
+# ani-rss-desktop
 
 使用 MyGo 和 Vuetify 管理本机的 ani-rss 服务。桌面端配置保存在当前用户主目录下的 `ani-rss-desktop/settings.json`
 。启动设置中的「配置与数据目录」对应服务的 `--config`，可以选用已有的 ani-rss 数据目录。
 
+Linux 和 Windows 主窗口使用系统原生标题栏、按钮、边框、圆角和阴影。只有 macOS 使用沉浸式标题栏，
+保留原生窗口按钮，侧栏和正文延伸到窗口顶部。关闭主窗口仍收起到托盘。
+
 首次使用时，可选用自动发现的 Java 25，也可以在「JDK 管理」里手动添加或下载 Eclipse Temurin 25，然后在「概览」启动服务。桌面端会下载项目的正式发行
 JAR，并校验文件大小和 SHA-256。
+
+## 托盘快捷面板
+
+托盘所有服务操作统一放在 MyGo `NewFlyout` 面板中，显示服务状态、版本和操作进度，并提供打开 Web UI、
+启动、重启、停止、显示主窗口、桌面端更新及退出。按钮随服务状态禁用；点击外部或按 Esc 收起面板。
+macOS 和 Windows 左右键点击托盘均打开同一面板。Linux 受 AppIndicator 限制，托盘菜单仅保留「打开快捷面板」入口，
+面板显示在主屏幕中央。面板沿用系统深浅色，单独加载 `tray.html`，关闭后释放页面。
 
 ## 开发与打包
 
@@ -19,7 +29,7 @@ MyGo 会重新生成 `src/mygo.ts`。生成当前平台的桌面包可运行 `go
 软件包和 Windows 可执行文件时，可运行以下命令。
 
 ```sh
-go tool mygo build -platform linux/amd64,windows/amd64 -skip-installer
+go tool mygo build -platform linux/amd64,windows/amd64,darwin/arm64 -skip-installer
 ```
 
 - macOS 使用系统 WKWebView，用户登录自启需要从 `.app` 打开应用。
