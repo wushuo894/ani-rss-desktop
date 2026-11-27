@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {computed, nextTick, onActivated, onDeactivated, ref, watch} from 'vue'
+import {computed, nextTick, onActivated, onDeactivated, ref} from 'vue'
 import {useDesktopState} from '../desktopState'
 import {Desktop} from '../mygo'
 
@@ -21,6 +21,12 @@ async function refreshLogs() {
   loading = true
   try {
     logs.value = await Desktop.getLogs()
+    // 等待日志渲染完成，再滚动到最后一行。
+    await nextTick()
+    const panel = logPanel.value
+    if (timer !== undefined && panel) {
+      panel.scrollTop = panel.scrollHeight
+    }
   } catch (error) {
     if (timer !== undefined) {
       clearInterval(timer)
@@ -32,12 +38,7 @@ async function refreshLogs() {
   }
 }
 
-watch(logs, async () => {
-  const panel = logPanel.value
-  if (!panel || panel.scrollHeight - panel.scrollTop - panel.clientHeight > 40) return
-  await nextTick()
-  panel.scrollTop = panel.scrollHeight
-})
+// 打开日志页时立即刷新，离开时停止轮询。
 onActivated(() => {
   timer = setInterval(refreshLogs, 800)
   void refreshLogs()
