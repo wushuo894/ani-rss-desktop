@@ -1,4 +1,6 @@
 :root {
+    --sidebar-width: clamp(156px, 18vw, 192px);
+    --desktop-titlebar-height: 0px;
     --ink: #2f211b;
     --muted: #725e54;
     --line: #e9ded3;
@@ -36,25 +38,63 @@
     color-scheme: dark;
 }
 
+/* 页面填满客户区，窗口外轮廓、圆角和阴影由系统负责。 */
+html, body, #app {
+    height: 100%;
+    overflow: hidden;
+    background: transparent;
+}
+
 .v-application {
+    height: 100%;
     font-family: inherit;
+    background: transparent !important;
+}
+
+.v-application__wrap {
+    height: 100%;
+    min-height: 0 !important;
+    overflow: hidden;
+    background: var(--cream);
+}
+
+/* 只有沉浸式窗口需要避让原生按钮，全屏时运行时会把该高度设为零。 */
+.immersive-window {
+    --desktop-titlebar-height: var(--mygo-titlebar-height, 44px);
+}
+
+/* 拖动层透明覆盖顶部，原生按钮叠在网页之上并自行处理鼠标事件。 */
+.window-titlebar {
+    --app-region: drag;
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: var(--desktop-titlebar-height);
+    overflow: hidden;
+    color: var(--muted);
+    user-select: none;
 }
 
 .desktop {
     display: grid;
-    grid-template-columns: clamp(156px, 18vw, 192px) minmax(0, 1fr);
-    min-height: 100vh;
+    grid-template-columns: var(--sidebar-width) minmax(0, 1fr);
+    height: 100%;
+    min-height: 0;
     color: var(--ink);
 }
 
 /* 页面滚动时保留菜单和后台服务状态。 */
 .sidebar {
-    position: sticky;
-    top: 0;
     display: flex;
     flex-direction: column;
-    height: 100vh;
-    padding: 27px 13px 19px;
+    height: 100%;
+    overflow-y: auto;
+    padding: max(27px, calc(var(--desktop-titlebar-height) + 16px)) 13px 19px;
     border-right: 1px solid var(--line);
     background: var(--sidebar);
 }
@@ -163,8 +203,10 @@
 
 .main {
     width: min(100%, 1080px);
+    height: 100%;
+    overflow-y: auto;
     margin: 0 auto;
-    padding: 28px clamp(20px, 4vw, 48px) 40px;
+    padding: max(28px, calc(var(--desktop-titlebar-height) + 16px)) clamp(20px, 4vw, 48px) 40px;
 }
 
 .page-header {
@@ -378,7 +420,7 @@ td .v-progress-linear {
 
 .log-panel {
     margin-top: 14px;
-    height: calc(100vh - 260px);
+    height: calc(100vh - var(--desktop-titlebar-height) - 260px);
     min-height: 210px;
     font-family: "SF Mono", "Cascadia Mono", ui-monospace, monospace;
 }

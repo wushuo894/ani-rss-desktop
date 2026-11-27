@@ -27,8 +27,15 @@ func (d *Desktop) Start() error { return d.action("启动服务", d.start) }
 // Stop 停止当前托管的进程。
 func (d *Desktop) Stop() error { return d.action("停止服务", d.stop) }
 
-// Restart 先等待旧 Java 退出，再使用已保存设置启动。
-func (d *Desktop) Restart() error { return d.action("重启服务", d.restart) }
+// Restart 仅重启已运行的服务，防止面板刷新前的点击将停止的服务意外启动。
+func (d *Desktop) Restart() error {
+	return d.action("重启服务", func() error {
+		if d.GetStatus().State != "running" {
+			return errors.New("服务尚未运行，无法重启")
+		}
+		return d.restart()
+	})
+}
 
 // active 表示桌面端已持有一轮启动，包括等待就绪的阶段。
 func (d *Desktop) active() bool {
@@ -119,10 +126,7 @@ func (d *Desktop) stop() error {
 
 // shutdown 先取消网络下载，再等待管理操作释放进程。
 func (d *Desktop) shutdown() {
-	d.cancel()
-	d.op.Lock()
-	defer d.op.Unlock()
-	_ = d.stop()
+	d.shutdownForUpdate(false)
 }
 
 // supervise 按退出码决定重启，并避免启动阶段异常形成无限重启。

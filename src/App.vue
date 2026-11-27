@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import {computed, onMounted, onUnmounted, ref, watchEffect} from 'vue'
+import {isMyGo, runtime} from 'mygo-runtime'
 import {provideDesktopState} from './desktopState'
 import JdkView from './views/JdkView.vue'
 import LogsView from './views/LogsView.vue'
@@ -9,6 +10,8 @@ import brand from './brand.png'
 
 const systemAppearance = window.matchMedia('(prefers-color-scheme: dark)')
 const systemDark = ref(systemAppearance.matches)
+// 只有 macOS 页面延伸到标题栏下方，并为原生窗口按钮预留空间。
+const immersiveWindow = isMyGo() && runtime().platform === 'darwin'
 
 // 系统外观变化时即时更新跟随系统模式。
 function updateSystemAppearance(event: MediaQueryListEvent) {
@@ -40,7 +43,10 @@ const progress = computed(() => status.value?.total ? (status.value.received / s
 </script>
 
 <template>
-  <v-app :theme="systemDark ? 'desktopDark' : 'desktop'">
+  <v-app :theme="systemDark ? 'desktopDark' : 'desktop'"
+         :class="{'immersive-window': immersiveWindow}">
+    <!-- 透明拖动区延伸到原生窗口按钮下方，按钮由系统叠加，不由网页重绘。 -->
+    <header v-if="immersiveWindow" class="window-titlebar" aria-label="窗口标题栏"/>
     <div class="desktop">
       <aside class="sidebar">
         <div class="brand">

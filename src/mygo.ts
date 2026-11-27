@@ -79,6 +79,8 @@ export const Desktop = {
   addJDK: bind<[string], void>("Desktop.AddJDK", (path: string) => [path]),
   /** ChangePassword 更新用户名和密码。运行中的实例先停止，避免覆盖配置。 */
   changePassword: bind<[string, string], void>("Desktop.ChangePassword", (username: string, next: string) => [username, next]),
+  /** CheckDesktopUpdate 打开桌面端更新窗口，检查、安装和重启由 MyGo 负责。 */
+  checkDesktopUpdate: bind<[], void>("Desktop.CheckDesktopUpdate", () => []),
   /** CheckUpdate 返回当前版本与 GitHub 最新正式版本。 */
   checkUpdate: bind<[], UpdateInfo>("Desktop.CheckUpdate", () => []),
   /** CopyText 通过系统剪贴板复制日志或接入地址。 */
@@ -113,7 +115,9 @@ export const Desktop = {
   openWeb: bind<[string], void>("Desktop.OpenWeb", (page: string) => [page]),
   /** PickPath 打开数据目录、JDK 目录或 java 可执行文件选择器。 */
   pickPath: bind<[string], string>("Desktop.PickPath", (kind: string) => [kind]),
-  /** Restart 先等待旧 Java 退出，再使用已保存设置启动。 */
+  /** QuitDesktop 走原有退出流程，确保关闭面板时仍会停止托管的 Java 服务。 */
+  quitDesktop: bind<[], void>("Desktop.QuitDesktop", () => []),
+  /** Restart 仅重启已运行的服务，防止面板刷新前的点击将停止的服务意外启动。 */
   restart: bind<[], void>("Desktop.Restart", () => []),
   /** SaveSettings 校验并保存配置，可在服务运行时立即重启。 */
   saveSettings: bind<[Settings, boolean], void>("Desktop.SaveSettings", (settings: Settings, restart: boolean) => [settings, restart]),
@@ -121,6 +125,8 @@ export const Desktop = {
   selectJDK: bind<[string], void>("Desktop.SelectJDK", (id: string) => [id]),
   /** SetAutoStart 将本应用注册为用户登录项或取消注册。 */
   setAutoStart: bind<[boolean], void>("Desktop.SetAutoStart", (enabled: boolean) => [enabled]),
+  /** ShowMainWindow 从快捷面板回到主窗口，并收起调用它的面板。 */
+  showMainWindow: bind<[], void>("Desktop.ShowMainWindow", () => []),
   /** Start 使用保存的配置拉起本机服务。 */
   start: bind<[], void>("Desktop.Start", () => []),
   /** Stop 停止当前托管的进程。 */

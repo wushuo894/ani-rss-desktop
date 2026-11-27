@@ -12,6 +12,8 @@ import (
 	"strconv"
 	"strings"
 	"sync"
+
+	"github.com/egoist/mygo"
 )
 
 const minJava = 25
@@ -51,15 +53,16 @@ type Status struct {
 
 // Desktop 是前端调用的本机管理服务。op 串行化配置和进程操作，mu 保护界面快照。
 type Desktop struct {
-	root    string
-	ctx     context.Context
-	cancel  context.CancelFunc
-	op      sync.Mutex
-	mu      sync.Mutex
-	data    storage
-	status  Status
-	proc    *javaRun
-	logText []byte
+	root       string
+	ctx        context.Context
+	cancel     context.CancelFunc
+	op         sync.Mutex
+	mu         sync.Mutex
+	data       storage
+	status     Status
+	proc       *javaRun
+	mainWindow *mygo.Window // 仅供快捷面板回到主窗口，读写由 mu 保护。
+	logText    []byte
 }
 
 var errBusy = errors.New("有其他管理操作正在进行")
