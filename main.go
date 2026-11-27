@@ -71,7 +71,8 @@ func main() {
 		if runtime.GOOS == "darwin" {
 			// macOS 页面延伸到标题栏下方，并保留系统原生窗口按钮。
 			opts.TitleBarStyle = mygo.TitleBarHidden
-			opts.TitleBarHeight = 44
+			// 关闭按钮距窗口左边和顶部各 16 点，与 Rename Studio 对齐。
+			opts.TrafficLightPosition = &mygo.Point{X: 16, Y: 16}
 		}
 		window = mygo.NewWindow(opts)
 		desktop.mu.Lock()
